@@ -1,0 +1,91 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #f7f7fb;
+  color: #222;
+}
+
+.game {
+  display: grid;
+  grid-template-columns: auto 220px;
+  gap: 24px;
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 0 16px;
+}
+
+.status {
+  margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.board-row {
+  display: flex;
+}
+
+.square {
+  width: 80px;
+  height: 80px;
+  margin: 4px;
+  font-size: 28px;
+  font-weight: 700;
+  border: 2px solid #e0e0ea;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.square:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+.square:active {
+  transform: translateY(1px);
+}
+.square--win {
+  background: #e8ffe8;
+  border-color: #28a745;
+}
+
+.game-info {
+  background: #fff;
+  border: 1px solid #ececf3;
+  border-radius: 12px;
+  padding: 16px;
+  height: fit-content;
+}
+
+.game-info ol {
+  padding-left: 18px;
+  margin: 0 0 12px;
+}
+
+.history-btn {
+  border: 1px solid #e0e0ea;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 4px 0;
+}
+.history-btn--active {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  font-weight: 600;
+}
+
+.reset-btn {
+  display: inline-block;
+  border: none;
+  background: #222;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.reset-btn:hover {
+  opacity: 0.9;
+}
