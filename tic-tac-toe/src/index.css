@@ -89,3 +89,7 @@ body {
 .reset-btn:hover {
   opacity: 0.9;
 }
+a.history-btn {
+  text-decoration: none;
+  display: inline-block;
+}
