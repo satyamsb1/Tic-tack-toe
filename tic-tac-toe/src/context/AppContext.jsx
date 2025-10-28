@@ -1,39 +1,29 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import * as api from "../services/api";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { socket } from "../services/socket";
 
 const AppCtx = createContext(null);
 
 export function AppProvider({ children }) {
   const [user, setUser] = useState({ name: "" });
-  const [lobby, setLobby] = useState({ rooms: [] });
+  const [connected, setConnected] = useState(false);
 
-  function setName(name) {
-    setUser((u) => ({ ...u, name }));
-  }
-
-  async function createRoom() {
-    const room = await api.createRoom();
-    setLobby((l) => ({ ...l, rooms: [...l.rooms, room] }));
-    return room;
-  }
-
-  async function joinRoom(roomId) {
-    const room = await api.joinRoom(roomId);
-    if (!lobby.rooms.find((r) => r.id === room.id)) {
-      setLobby((l) => ({ ...l, rooms: [...l.rooms, room] }));
+  // Connect socket after we have a username
+  useEffect(() => {
+    if (!user?.name) return;
+    if (!connected) {
+      socket.connect();
+      socket.emit("user:hello", user.name);
+      setConnected(true);
     }
-    return room;
-  }
-
-  function clearAll() {
-    setUser({ name: "" });
-    setLobby({ rooms: [] });
-    api.resetMock();
-  }
+  }, [user, connected]);
 
   const value = useMemo(
-    () => ({ user, setName, lobby, createRoom, joinRoom, clearAll }),
-    [user, lobby]
+    () => ({
+      user,
+      setUser,
+      socketConnected: connected,
+    }),
+    [user, connected]
   );
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;

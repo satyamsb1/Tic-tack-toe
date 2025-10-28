@@ -1,69 +1,98 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
+import { socket } from "../services/socket";
 
 export default function Lobby() {
-  const { user, lobby, createRoom, joinRoom } = useApp();
-  const [roomId, setRoomId] = useState("");
+  const { user } = useApp();
+  const [title, setTitle] = useState("");
+  const [code, setCode] = useState("");
+  const [events, setEvents] = useState([]);
   const nav = useNavigate();
 
-  async function handleCreate() {
-    const room = await createRoom();
-    nav(`/event/${room.id}`);
-  }
-  async function handleJoin(e) {
-    e.preventDefault();
-    if (!roomId.trim()) return;
-    const room = await joinRoom(roomId.trim());
-    nav(`/event/${room.id}`);
-  }
+  useEffect(() => {
+    const refresh = () => socket.emit("events:list");
+    const onList = (list) => setEvents(list);
+
+    refresh();
+    socket.on("events:list:result", onList);
+    socket.on("events:changed", refresh);
+
+    return () => {
+      socket.off("events:list:result", onList);
+      socket.off("events:changed", refresh);
+    };
+  }, []);
+
+  const createEvent = () => {
+    socket.emit("event:create", { title }, (id) => nav(`/event/${id}`));
+  };
+
+  const joinEvent = () => {
+    socket.emit("event:join", { id: code.trim() }, (res) => {
+      if (res?.ok) nav(`/event/${res.id}`);
+      else alert(res?.error || "Unable to join.");
+    });
+  };
 
   return (
-    <main>
-      <div className="status" style={{ marginBottom: 16 }}>
-        You’re in the lobby as <strong>{user.name}</strong>
-      </div>
+    <main style={{ maxWidth: 860, margin: "32px auto", padding: "0 16px" }}>
+      <h1 style={{ marginTop: 0 }}>Main Lobby</h1>
+      <p>
+        Hi {user?.name || "there"}! Create a new room or join an existing one.
+      </p>
 
-      <div className="game" style={{ gridTemplateColumns: "1fr" }}>
-        <section className="game-info">
-          <h3 style={{ marginTop: 0 }}>Start a new event</h3>
-          <button className="reset-btn" onClick={handleCreate}>
-            Create room
+      <section className="game-info" style={{ margin: "16px 0" }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <input
+            placeholder="Room title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="history-btn"
+            style={{ flex: 1 }}
+          />
+          <button className="reset-btn" onClick={createEvent}>
+            Create
           </button>
-        </section>
+        </div>
 
-        <section className="game-info">
-          <h3 style={{ marginTop: 0 }}>Join an existing room</h3>
-          <form onSubmit={handleJoin} style={{ display: "flex", gap: 8 }}>
-            <input
-              className="history-btn"
-              style={{ flex: 1, padding: 10 }}
-              placeholder="Enter room ID"
-              value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
-            />
-            <button className="reset-btn" type="submit">
-              Join
-            </button>
-          </form>
-        </section>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            placeholder="Enter room code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="history-btn"
+            style={{ flex: 1 }}
+          />
+          <button className="history-btn" onClick={joinEvent}>
+            Join
+          </button>
+        </div>
+      </section>
 
-        <section className="game-info">
-          <h3 style={{ marginTop: 0 }}>Recent rooms</h3>
+      <section className="game-info">
+        <h3 style={{ marginTop: 0 }}>Active Rooms</h3>
+        {events.length === 0 ? (
+          <p>No rooms yet. Create one above.</p>
+        ) : (
           <ul>
-            {lobby.rooms.length === 0 && <li>No rooms yet</li>}
-            {lobby.rooms.map((r) => (
-              <li key={r.id}>
-                <button
+            {events.map((e) => (
+              <li key={e.id} style={{ marginBottom: 8 }}>
+                <div>
+                  <strong>{e.title}</strong> — Code: <code>{e.id}</code> —
+                  Players: {e.players.join(", ") || "—"}
+                </div>
+                <Link
+                  to={`/event/${e.id}`}
                   className="history-btn"
-                  onClick={() => nav(`/event/${r.id}`)}>
-                  Go to room <strong>{r.id}</strong>
-                </button>
+                  style={{ marginTop: 6, display: "inline-block" }}>
+                  Open
+                </Link>
               </li>
             ))}
           </ul>
-        </section>
-      </div>
+        )}
+      </section>
     </main>
   );
 }

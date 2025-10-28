@@ -3,30 +3,30 @@ import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 
 export default function Onboarding() {
+  const { setUser } = useApp();
   const [name, setName] = useState("");
-  const { setName: setAppName } = useApp();
   const nav = useNavigate();
 
-  function onSubmit(e) {
+  function submit(e) {
     e.preventDefault();
     if (!name.trim()) return;
-    setAppName(name.trim());
+    setUser({ name: name.trim() });
     nav("/lobby");
   }
 
   return (
-    <main className="game-info" style={{ marginTop: 48 }}>
-      <h2 style={{ marginTop: 0 }}>Welcome</h2>
-      <p>Please enter your name to join the lobby.</p>
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
+    <main style={{ maxWidth: 480, margin: "48px auto", padding: "0 16px" }}>
+      <h1>Welcome</h1>
+      <p>Enter your name to start.</p>
+      <form onSubmit={submit} style={{ display: "flex", gap: 8 }}>
         <input
-          className="history-btn"
-          style={{ padding: 10 }}
-          placeholder="Your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          placeholder="Your name"
+          className="history-btn"
+          style={{ flex: 1 }}
         />
-        <button className="reset-btn" type="submit">
+        <button type="submit" className="reset-btn">
           Continue
         </button>
       </form>

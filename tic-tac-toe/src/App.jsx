@@ -1,75 +1,35 @@
-import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
-import { AppProvider, useApp } from "./context/AppContext";
-import Onboarding from "./pages/Onboarding";
-import Lobby from "./pages/Lobby";
-import Event from "./pages/Event";
-import "./index.css";
-
-function Protected({ children }) {
-  const { user } = useApp();
-  if (!user.name) return <Navigate to="/" replace />;
-  return children;
-}
-
-function Shell({ children }) {
-  const { user, clearAll } = useApp();
-  return (
-    <div style={{ maxWidth: 960, margin: "32px auto", padding: "0 16px" }}>
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}>
-        <Link
-          to="/lobby"
-          style={{ textDecoration: "none", fontWeight: 800, fontSize: 18 }}>
-          🎮 Multi-Session Demo
-        </Link>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          {user.name && (
-            <span>
-              Hi, <strong>{user.name}</strong>
-            </span>
-          )}
-          <button className="history-btn" onClick={clearAll}>
-            Reset App
-          </button>
-        </div>
-      </header>
-      {children}
-    </div>
-  );
-}
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 export default function App() {
+  const { pathname } = useLocation();
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <Shell>
-          <Routes>
-            <Route path="/" element={<Onboarding />} />
-            <Route
-              path="/lobby"
-              element={
-                <Protected>
-                  <Lobby />
-                </Protected>
-              }
-            />
-            <Route
-              path="/event/:roomId"
-              element={
-                <Protected>
-                  <Event />
-                </Protected>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Shell>
-      </BrowserRouter>
-    </AppProvider>
+    <div>
+      <header style={{ background: "#fff", borderBottom: "1px solid #ececf3" }}>
+        <div
+          style={{
+            maxWidth: 960,
+            margin: "0 auto",
+            padding: "12px 16px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}>
+          <Link to="/" style={{ fontWeight: 700 }}>
+            Tic-Tac-Toe Multiplayer
+          </Link>
+          <nav style={{ display: "flex", gap: 12 }}>
+            <Link to="/" style={{ fontWeight: pathname === "/" ? 700 : 400 }}>
+              Onboarding
+            </Link>
+            <Link
+              to="/lobby"
+              style={{ fontWeight: pathname.startsWith("/lobby") ? 700 : 400 }}>
+              Lobby
+            </Link>
+          </nav>
+        </div>
+      </header>
+      <Outlet />
+    </div>
   );
 }
